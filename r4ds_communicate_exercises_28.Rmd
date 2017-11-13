@@ -1,0 +1,123 @@
+---
+title: "r4ds_communicate_exercises_28"
+author: "Jared Stier"
+date: "November 12, 2017"
+output: html_document
+---
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(lubridate)
+```
+
+# 28.2.1
+
+## 1. 
+```{r}
+ggplot(mpg, aes(x = year, y = hwy, color = class)) + 
+  geom_point() + 
+  labs(
+    x = 'Model Year',
+    y = 'Highway MPG',
+    title = 'MPGs Through the Years',
+    subtitle = 'Well, I thought this would be interesting. Whoops',
+    color = 'Car Class'
+  )
+
+```
+
+## 2.
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, colour = class)) +
+  geom_point(aes(colour = class)) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Fuel efficiency decreases with engine size",
+    subtitle = "Subcompact cars are the most sensitive to engine size"
+  )
+
+```
+
+## 3.
+I haven't made any exploratory graphics in the past month. Sorry
+
+# 28.3.1
+
+## 1. 
+```{r}
+label <- tribble(
+  ~displ, ~hwy, ~label, ~vjust, ~hjust,
+     Inf,  Inf,    "Top right", "top", "right",
+     Inf, -Inf,    "Bottom right", "bottom", "right",
+    -Inf,  Inf,    "Top left", "top", "left",
+    -Inf, -Inf,    "Bottom left", "bottom", "left"
+)
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_text(aes(label = label, vjust = vjust, hjust = hjust), data = label)
+
+```
+
+## 2.
+`Annotate()` has arguments like aesthetic mappings that can be used to place your text
+
+## 3.
+If you add a label, it gets applied to all facets by default. 
+To add the label to just one facet, include it as part of your label tibble. Ex:
+```
+label <- tibble(
+  displ = Inf,
+  hwy = Inf,
+  class = "2seater",
+  label = "Something about 2 seaters"
+)
+```
+## 4.
+* `label.padding ` adds padding
+* `label.r` rounds the corners
+* `label.size` changes the size of the label border
+
+## 5.
+Four arguments to arrow are:
+
+* `angle`: angle of arrow head
+* `length`: length of arrow head
+* `ends`: ends of the line to draw arrow head
+* `type`: open or close, whether the arrow head is open or closed.
+
+# 28.4.4
+
+## 1. 
+You gotta use the fill aesthetic, not color. 
+
+## 2.
+First argument to every scale is the label. It's just like `labs()`
+
+## 3.
+```{r}
+years <- lubridate::make_date(seq(year(min(presidential$start)),
+             year(max(presidential$end)),
+             by = 4), 1, 1)
+
+presidential %>%
+  mutate(id = 33 + row_number(),
+         name_id = stringr::str_c(name, ' (', id, ')'),
+         name_id = factor(name_id, levels = name_id)) %>%
+  ggplot(aes(start, name_id, colour = party)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = name_id)) +
+    scale_colour_manual(values = c(Republican = 'red', Democratic = 'blue')) +
+    scale_y_discrete(NULL) +
+    scale_x_date(NULL, breaks = years, date_labels = "'%y") +
+    theme(panel.grid.minor = element_blank())
+```
+
+## 4.
+```{r}
+ggplot(diamonds, aes(carat, price)) +
+  geom_point(aes(colour = cut), alpha = 1/20)  +
+  theme(legend.position = "bottom") +
+  guides(colour = guide_legend(nrow = 1, override.aes = list(alpha = 1)))
+```

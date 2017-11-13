@@ -1,0 +1,139 @@
+---
+title: "r4ds_communicate_exercises_27"
+output: html_document
+---
+
+# 27.2.1
+
+1.  I did it
+2.  I did it
+3.  R notebook show output inside of editor. R markdown shows output in the console.
+4.  The output and intermediate files are different. The input difference is the output in the YAML header `word_document`, `pdf_document` and `html_document`
+
+# 27.3.1
+
+## Jared Stier
+
+----
+
+### Education
+*  __2015__  NCSU, B.S. in Mechanical Engineering
+
+--------
+
+### Employment
+* __2015 - Current__ Red Ventures, Paid Media Associate
+
+2.  Using the R Markdown quick reference, figure out how to
+  * Go see my footnote at the bottom^[Here's my footnote]  
+  * This is a horizontal rule below
+  
+  ------
+  
+  * >This is a block quote
+  
+3.  
+
+```{r setup, include = FALSE}
+library(ggplot2)
+library(dplyr)
+
+smaller <- diamonds %>% 
+  filter(carat <= 2.5)
+```
+
+We have data about `r nrow(diamonds)` diamonds. Only 
+`r nrow(diamonds) - nrow(smaller)` are larger than
+2.5 carats. The distribution of the remainder is shown
+below:
+
+```{r, echo = FALSE}
+smaller %>% 
+  ggplot(aes(carat)) + 
+  geom_freqpoly(binwidth = 0.01)
+```
+
+Looks like a lot of values are rounded to the tenth's place
+  
+# 27.4.7
+1.  
+
+```{r, echo=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+```
+
+
+```{r}
+
+ggplot(diamonds) + 
+  geom_bar(mapping = aes(x = cut))
+
+```
+
+
+```{r}
+ggplot(diamonds) + 
+  geom_bar(mapping = aes(x = color))
+
+```
+
+```{r}
+ggplot(diamonds) + 
+  geom_bar(mapping = aes(x = clarity))
+
+```
+
+2.  
+
+```{r}
+knitr::kable(
+  arrange(diamonds, desc(carat))[1:20,1:4],
+  caption = '20 Largest Diamonds'
+)
+
+
+```
+
+3. 
+
+```{r, warning=FALSE, message=FALSE}
+library(scales)
+smaller %>% 
+  ggplot(aes(carat)) + 
+  geom_freqpoly(binwidth = 0.01) +
+  scale_y_continuous(label = comma)
+
+print(paste(comma(nrow(filter(diamonds, carat > 2.5))/nrow(diamonds),digits=2), '% of diamonds are larger than 2.5 carats',sep=''))
+
+
+```
+
+4.
+
+```{r a, cache=TRUE}
+thedate <- lubridate::now()
+print(thedate)
+
+```
+
+```{r b, cache=TRUE}
+thedate2 <- thedate
+print(thedate2)
+
+```
+
+```{r c, cache=TRUE}
+thedate3 <- thedate2
+print(thedate3)
+
+```
+
+```{r d, cache=TRUE}
+thedate4 <- thedate3
+print(thedate4)
+
+```
+
+
+
