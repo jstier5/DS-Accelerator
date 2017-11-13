@@ -30,7 +30,7 @@ ggplot(mpg, aes(x = year, y = hwy, color = class)) +
 ## 2.
 ```{r}
 ggplot(mpg, aes(x = displ, y = hwy, colour = class)) +
-  geom_point(aes(colour = class)) +
+  geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
   labs(
     title = "Fuel efficiency decreases with engine size",

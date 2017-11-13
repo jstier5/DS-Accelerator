@@ -1,0 +1,121 @@
+---
+title: "HaydenFeedback_r4ds_27&28"
+author: "Jared Stier"
+date: "November 13, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(dplyr)
+smaller <- diamonds %>% 
+  filter(carat <= 2.5)
+```
+
+
+#General comments
+
+* Your file isn't rmarkdown, so I can't just knit it and run everything
+* You have two blocks of code named `setup`. Knitting will fail if you have more than one chunk of code named the same thing. If the code you want in a second setup doesn't produce any results, you could always set `echo=FALSE` or `include=FALSE` so the code doesn't show up in the output.
+  * I removed the word `setup` from line 61
+  * You also have a third `setup` within a larger code chunk at line 94. Try to load all libraries you need in the initial set up at the top, even if you don't need them until later.
+    * I commented out line 94. Now everything fully ran. 
+* Since you didn't have this as a rmd file, this is probably just accidental. But the number of `#`'s in your headers seem to be reversed. Just one `#` is the largest header. 
+  
+
+#27.3.1
+
+## Question 1
+I'd be curious to see your resume. I didn't see it in the repo
+
+## Question 2
+
+Try actually creating the footnote in an rmd file when you get a chance. I needed a couple tries to set it up successfully, it's a little weird
+
+#27.4.7
+
+## Question 1
+You could have added a couple graphs here. I believe their intent was to write code without the echo parameter so you can show someone the results, but also how you got to it. I did that with a few charts below.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+```
+
+
+```{r}
+
+ggplot(diamonds) + 
+  geom_bar(mapping = aes(x = cut))
+
+```
+
+
+```{r}
+ggplot(diamonds) + 
+  geom_bar(mapping = aes(x = color))
+
+```
+
+```{r}
+ggplot(diamonds) + 
+  geom_bar(mapping = aes(x = clarity))
+
+```
+
+## Question 3
+
+You never closed off the code chunk that starts at line 102 before trying to start question 4.
+
+Unless I'm reading this wrong, I don't see where you used `comma()` to change the output.
+
+## Question 4
+
+The point of this question is to work on dependencies. Calling `lubridate::now()` in each code chunk defeats the purpose. Assign `lubridate::now()` to a variable in the first code chunk, then try calling that variable in a later chunk. Then try messing with the caching to get an output different than what it would be if you ran each code chunk in succession.
+
+
+# 28.2.1
+
+## Question 2
+
+What you did helps, but I think you could have gone step further by supplying a linear model for each of the car classes. Try moving the aesthetic `color = class` from the `geom_point()` to the initialization of the plot in `ggplot()`. You could also leave it in `geom_point()`, but also add it to `geom_smooth()`. Both options will have it applied everywhere. See example below:
+
+```{r}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Fuel efficiency generally decreases with engine size",
+       subtitle = "Two seaters (sports cars) are an exception because of their light weight",
+       caption = "Data from fueleconomy.gov")
+```
+
+
+# 28.3.1
+
+## Question 3
+
+I'm not sure I know what you were doing here. I think the important message they wanted to get across is that if you add a label, it gets applied to all facets by default. 
+To add the label to just one facet, include it as part of your label tibble. Ex below, this label should only show up in the 2seater facet.
+```
+label <- tibble(
+  displ = Inf,
+  hwy = Inf,
+  class = "2seater",
+  label = "Something about 2 seaters"
+)
+```
+# 28.4.4
+
+## Question 3
+
+You missed out on one aspect they were looking for, changing the scale of the x-axis to break every 4 years. 
+
+I approached this by making a vector with all of the relevent years, then put it as part of the x_scale within the chart.
+```
+years <- lubridate::make_date(seq(year(min(presidential$start)),
+             year(max(presidential$end)),
+             by = 4), 1, 1)
+             
+ggplot() + ......+
+  scale_x_date(NULL, breaks = years, date_labels = "'%y")
+```
