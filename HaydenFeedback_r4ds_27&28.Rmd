@@ -13,7 +13,7 @@ smaller <- diamonds %>%
 ```
 
 
-#General comments
+# General comments
 
 * Your file isn't rmarkdown, so I can't just knit it and run everything
 * You have two blocks of code named `setup`. Knitting will fail if you have more than one chunk of code named the same thing. If the code you want in a second setup doesn't produce any results, you could always set `echo=FALSE` or `include=FALSE` so the code doesn't show up in the output.
@@ -23,7 +23,7 @@ smaller <- diamonds %>%
 * Since you didn't have this as a rmd file, this is probably just accidental. But the number of `#`'s in your headers seem to be reversed. Just one `#` is the largest header. 
   
 
-#27.3.1
+# 27.3.1
 
 ## Question 1
 I'd be curious to see your resume. I didn't see it in the repo

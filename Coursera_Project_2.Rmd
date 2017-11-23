@@ -1,0 +1,157 @@
+---
+title: "Coursera_Project_2"
+author: "Jared Stier"
+date: "November 14, 2017"
+output: html_document
+---
+
+# Initial Set Up
+Below is my code to red in the data
+
+```{r DataReading, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+library(tidyverse)
+# Create new folder and Unzip the data into it
+setwd('~.')
+if(!dir.exists('./Coursera_Project_2')){dir.create('./Coursera_Project_2')}
+setwd('./Coursera_Project_2')
+temp <- tempfile()
+download.file('https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip',temp)
+unzip(temp)
+
+# Find the files within the folder and read them 
+files <- list.files(path = './')
+for(i in 1:length(files)){
+  assign(paste(strsplit(files[i],'.rds')),readRDS(files[i]))
+}
+allthedata <- left_join(summarySCC_PM25, Source_Classification_Code, by = 'SCC')
+
+```
+
+# Question 1
+Have total emissions from PM2.5 decreased in the United States from 1999 to 2008? Using the base plotting system, make a plot showing the total PM2.5 emission from all sources for each of the years 1999, 2002, 2005, and 2008.
+
+```{r Q1}
+library(RColorBrewer)
+Q1Data <- group_by(allthedata, year) %>% summarise(sumEmissions = sum(Emissions)/1000000)
+n <- length(unique(Q1Data$year))
+theorder <- order(Q1Data$sumEmissions)
+colors <- brewer.pal(n,'YlOrRd')
+barplot(Q1Data$sumEmissions,
+        names.arg = Q1Data$year,
+        xlab = 'Year',
+        ylab = expression('PM'[2.5]*' Emmisions (10'^6*' Tons)'),
+        main = expression('Total PM'[2.5]*' Emissions From All US Sources'),
+        sub = expression('PM'[2.5]*' emissions have declined over the past 10 years'),
+        col = colors[theorder])
+
+
+```
+
+# Question 2
+Have total emissions from PM2.5 decreased in the Baltimore City, Maryland (fips == "24510") from 1999 to 2008? Use the base plotting system to make a plot answering this question.
+
+```{r Q2}
+Q2Data <- filter(allthedata, fips == '24510') %>% group_by(year) %>% summarise(sumEmissions = sum(Emissions)/1000)
+n <- length(unique(Q2Data$year))
+theorder <- order(Q2Data$sumEmissions)
+colors <- brewer.pal(n,'YlOrRd')
+barplot(Q2Data$sumEmissions,
+        names.arg = Q2Data$year,
+        xlab = 'Year',
+        ylab = expression('PM'[2.5]*' Emmisions (10'^3*' Tons)'),
+        main = expression('Total PM'[2.5]*' Emissions From All Baltimore City Sources'),
+        sub = expression('PM'[2.5]*' emissions have declined over the past 10 years in Baltimore City'),
+        col = colors[theorder])
+
+
+```
+
+# Question 3
+Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, which of these four sources have seen decreases in emissions from 1999-2008 for Baltimore City? Which have seen increases in emissions from 1999-2008? Use the ggplot2 plotting system to make a plot answer this question.
+
+```{r Q3}
+Q3Data <- filter(allthedata, fips == '24510') %>% group_by(Data.Category,year) %>% summarise(sumEmissions = sum(Emissions)/1000) %>% filter(Data.Category != 'Event')
+
+ggplot(Q3Data) + 
+  geom_col(mapping = aes(x = factor(year), y = sumEmissions, fill = Data.Category), position = 'dodge') +
+  facet_grid(. ~ Data.Category) + 
+  labs(x = 'Year', y = expression('PM'[2.5]*' Emmisions (10'^3*' Tons)'), title = expression('Total PM'[2.5]*' Emissions, Baltimore City, All Source Types')) +
+  labs(caption = expression('PM'[25]*' Emmisions have declined from Nonpoint and Onroad sources')) +
+  theme(axis.text.x = element_text(angle = 90, vjust = .5))
+
+```
+
+# Question 4
+Across the United States, how have emissions from coal combustion-related sources changed from 1999-2008?
+
+```{r Q4}
+# Subset the data to get to coal combustion 
+Q4Data <- filter(allthedata, (grepl('comb', allthedata$Short.Name, ignore.case = TRUE) | grepl('coal', allthedata$Short.Name, ignore.case = TRUE)))
+Q4Data2 <- Q4Data %>% group_by(year) %>% summarise(sumEmissions = sum(Emissions)/1000)
+
+n <- length(unique(Q4Data2$year))
+theorder <- order(Q4Data2$sumEmissions)
+
+barplot(Q4Data2$sumEmissions,
+        names.arg = Q4Data2$year,
+        xlab = 'Year',
+        ylab = expression('PM'[2.5]*' Emmisions (10'^3*' Tons)'),
+        main = expression('Total PM'[2.5]*' Emissions From Coal Combustion-Related Sources'),
+        sub = expression('PM'[2.5]*' emissions have declined from 1.4MM tons to 0.9MM tons over the past 10 years'),
+        col = colors[theorder])
+
+```
+
+# Question 5
+How have emissions from motor vehicle sources changed from 1999-2008 in Baltimore City?
+
+```{r Q5}
+Q5Data <- filter(allthedata, grepl('Highway Vehicles', allthedata$SCC.Level.Two, ignore.case = TRUE)) %>% group_by(year) %>% summarise(sumEmissions = sum(Emissions)/1000)
+# Searching for 'vehicles' in SCC.Level.Two seemed to be fully inclusive of all the naming conventions across other columns.
+# I specified 'Highway Vehicles' (filtering out off-highway vehicles) as off-highway vehicles looked to be construction and agricultural equipment
+
+n <- length(unique(Q5Data$year))
+theorder <- order(Q5Data$sumEmissions)
+
+barplot(Q5Data$sumEmissions,
+        names.arg = Q4Data2$year,
+        xlab = 'Year',
+        ylab = expression('PM'[2.5]*' Emmisions (10'^3*' Tons)'),
+        main = expression('Total PM'[2.5]*' Emissions From Coal Combustion-Related Sources'),
+        sub = expression('PM'[2.5]*' emissions rose sharply from 1999-2002, and have steadily increased since'),
+        col = colors[theorder])
+
+```
+
+# Question 6
+Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?
+
+```{r Q6}
+Q6Data <- allthedata %>% filter((fips %in% c('06037','24510')) & grepl('Highway Vehicles', allthedata$SCC.Level.Two, ignore.case = TRUE)) %>% group_by(fips,year) %>% summarise(sumEmissions = sum(Emissions))
+
+
+allfips <- unique(Q6Data$fips)
+startingValue <- NULL
+Q6Data2 <- NULL
+
+# I'm going to index the data to 1999 to help better compare relative trends between the two cities
+for(i in 1:length(allfips)){
+    dataSubset <- filter(Q6Data,fips == allfips[i])
+    minYear <- min(dataSubset$year)
+    dataSubset2 <- filter(dataSubset, year == minYear)
+    startingValue <- dataSubset2$sumEmissions
+    dataSubset <- mutate(dataSubset, indexEmissions = sumEmissions/startingValue,
+                         City = ifelse(allfips[i] == '06037', 'Los Angeles County',
+                                       ifelse(allfips[i] == '24510', 'Baltimore City', NA)))
+    Q6Data2 <- rbind(Q6Data2,dataSubset)
+}
+
+ggplot(Q6Data2, mapping = aes(x = year, y = indexEmissions, color = City)) +
+  geom_line() + 
+  labs(x = 'Year', y = expression('PM'[25]*' Emissions Index'), title = expression('PM'[25]*' Motor Vehicle Source Emissions Index in Baltimore & LA, 1999-2008'), caption = 'Emissions from motor vehicles has been declining in Baltimore and remaining flat in LA') 
+  
+  
+```
+
+
